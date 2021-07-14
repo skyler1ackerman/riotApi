@@ -6,7 +6,7 @@ pp = pprint.PrettyPrinter(indent=4)
 watcher = LolWatcher(TOKEN)
 my_region = 'na1'
 
-username = 'Ryshandala'
+username = '<USERNAME>'
 
 me = watcher.summoner.by_name(my_region, username)
 # # my_matches = watcher.match.matchlist_by_account(my_region, me['accountId'])

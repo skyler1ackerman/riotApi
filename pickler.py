@@ -1,8 +1,8 @@
 import pickle, json, time
 
-username = 'thomasm16'
+username = '<USERNAME>'
 
-usernames=['thomasm16', 'LunarFate', 'Jamessv98', 'Demente', 'Adrian Gomez']
+usernames=['<USERNAMES>']
 
 
 for username in usernames:
