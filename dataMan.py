@@ -8,13 +8,7 @@ pp = pprint.PrettyPrinter(indent=4)
 
 my_region = 'na1'
 
-# username = 'thomasm16'
-# username = 'Demente'
-# username = 'Adrian Gomez'
-# username = 'LunarFate'
-# username = 'Jamessv98'
-username = 'Jęnz'
-# username = 'King Le'
+username = '<USERNAME>'
 
 watcher = LolWatcher(TOKEN)
 latest = watcher.data_dragon.versions_for_region(my_region)['n']['champion']
@@ -104,7 +98,10 @@ def getStatList(stat_list, mode=None, lane=None, role=None, username=username, c
 		# Sum the total of that stat
 		try:
 			if not isinstance(stat_list, list):
-				ret_list.append(player['stats'][stat_list])
+				if timenorm:
+					ret_list.append((player['stats'][stat_list])/match['gameDuration'])
+				else:
+					ret_list.append(player['stats'][stat_list])
 			else:
 				temp=[]
 				for i, stat in enumerate(stat_list):
@@ -190,7 +187,7 @@ def plotHist(stat, mode=None, lane=None, champ=None, bins=None, save=False, show
 	stat_list = getStatList(stat, mode=mode, lane=lane, champ=champ, timenorm=timenorm)
 	# Get color map
 	cm = plt.cm.get_cmap('plasma')
-	# Make the histogram
+	# Make the histogram1
 	range_ = max(stat_list)-min(stat_list)
 	if bins == None:
 		bins = range_
@@ -291,11 +288,13 @@ def userWins():
 			ret_dict[player] += toAdd
 	return ret_dict
 
-def champCounts():
+def champCounts(mode=None):
 	id_=500
 	ret_dict = dict()
 	for match in data:
 		for part in match['participantIdentities']:
+			if mode != None and match['gameMode']!=mode:
+					continue
 			if username == part['player']['summonerName']:
 				id_=part['participantId']
 		champ = match['participants'][id_-1]['championId']
@@ -334,12 +333,14 @@ def compareStats(stat, userList, fun=avgStat, mode=None, lane=None, role=None, t
 	print(stat_dict)
 	graphDict(stat_dict, num_vals=len(stat_dict), title=title, xlabel=xlabel, ylabel=ylabel, save=save, show=show, rotation=rotation)
 
-def statPerChamp(stat, min_games=3, fun=avgStat):
-	champ_counts = champCounts()
+def statPerChamp(stat, min_games=5, fun=avgStat, mode=None, timenorm=False):
+	champ_counts = champCounts(mode=mode)
+	pprint.pprint(champ_counts)
 	stat_dict = dict()
 	for k, v in champ_counts.items():
 		if v >= min_games:
-			stat_dict[k] = fun(stat, champ=k)
+			stat_dict[k] = fun(stat, champ=k, mode=mode, timenorm=timenorm)
+			# TODO: Why does this break?
 	return {k:v for k,v in sorted(stat_dict.items(), key=lambda item: item[1])}
 
 # def statPerStat(stat_list, mode=None, lane=None, role=None)
@@ -349,15 +350,19 @@ def statPerChamp(stat, min_games=3, fun=avgStat):
 # graphDict(champCounts, ylabel='Total plays', title='Total champ plays', save=True, num_vals=10)
 # print(avgStat('visionScore', mode='CLASSIC'))
 stats = ['wardsPlaced', 'wardsKilled', 'visionWardsBoughtInGame', 'visionScore']
-userList=['thomasm16', 'Demente', 'Adrian Gomez', 'Jęnz']
+userList=['thomasm16', 'Demente', 'Adrian Gomez', 'Jamessv98']
 stat = 'visionScore'
 stat_list = ['totalTimeCrowdControlDealt', 'visionScore']
-# compareStats(stat, userList, role='DUO_SUPPORT', title=f' Avg {stat} per person', ylabel=f'Avg {stat} per game', xlabel=f'Player', save=True, timenorm=True)
+# compareStats(stat, userList, lane='JUNGLE', title=f' Avg {stat} per person', ylabel=f'Avg {stat} per game', xlabel=f'Player', save=True, timenorm=True)
 
 
 
 
-# data = loadData(f'pickle/match_det_{username}')
+data = loadData(f'pickle/match_det_{username}')
+
+# graphDict(statPerChamp('totalDamageDealt', timenorm=True, mode='CLASSIC'), rotation=45)
+print(sumstat('perk0Var1'))
+# print(avgStat('totalDamageDealt', mode='CLASSIC'))
 
 # graphDict(champKDAs(), title=f'{username} Best KDA\'s', xlabel='Champs', ylabel='KDA', save=True, show=True)
 
